@@ -1,36 +1,52 @@
-// Neon Vice Cover Studio — make.fun entrypoint (gta6-cover-art-01).
-// Copies the offline static app (app/) and the screenshots into the
-// output directory and writes output/dossier.json with the vendored
-// make.fun library. Outside the grader, MAKEFUN_OUTPUT_DIR stands in
-// for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// Neon Vice Cover Studio — entry program (Node 22, standard library only).
+//
+// This program hands the entry in: it copies the static app under app/ and
+// the screenshots under screenshots/ from this repository into the output
+// directory, then writes dossier.json there with buildDossier from the
+// vendored make.fun library (vendor/makefun-app.ts, the kit's own copy).
+//
+// In the grader the output directory is /output. Anywhere else, set
+// MAKEFUN_OUTPUT_DIR to a directory of your choice, for example:
+//   MAKEFUN_OUTPUT_DIR=out node main.ts
+// Serve the app locally with: node serve.ts  (http://localhost:8080)
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { buildDossier } from "./vendor/makefun-app.ts";
+import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { buildDossier } from './vendor/makefun-app.ts';
 
-const here = fileURLToPath(new URL(".", import.meta.url));
-const out = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+// Directory holding this file, i.e. the repository root.
+const repoRoot = dirname(fileURLToPath(import.meta.url));
 
-mkdirSync(out, { recursive: true });
-cpSync(join(here, "app"), join(out, "app"), { recursive: true });
-mkdirSync(join(out, "screenshots"), { recursive: true });
-if (existsSync(join(here, "screenshots"))) {
-  cpSync(join(here, "screenshots"), join(out, "screenshots"), { recursive: true });
+// Where the handed-in entry goes: the grader's /output, or the override.
+const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+
+function copyTree(source: string, target: string): void {
+  mkdirSync(dirname(target), { recursive: true });
+  cpSync(source, target, { recursive: true });
 }
 
-// Scorer caps: at most 4 screenshots of at most 256 KiB each, app/ at
-// most 993 files / 48 MiB in total, no app/ path over 1000 bytes, and
-// the dossier text budget of 160 KiB. The dossier is deterministic:
-// the same repository always builds the same dossier.json bytes.
-writeFileSync(
-  join(out, "dossier.json"),
-  buildDossier(out, {
+function handIn(): void {
+  mkdirSync(outputDir, { recursive: true });
+  // Start from a clean output so a stale file can never leak into the entry.
+  for (const name of ['app', 'screenshots', 'dossier.json']) {
+    const p = join(outputDir, name);
+    if (existsSync(p)) rmSync(p, { recursive: true, force: true });
+  }
+  copyTree(join(repoRoot, 'app'), join(outputDir, 'app'));
+  if (existsSync(join(repoRoot, 'screenshots'))) {
+    copyTree(join(repoRoot, 'screenshots'), join(outputDir, 'screenshots'));
+  } else {
+    mkdirSync(join(outputDir, 'screenshots'), { recursive: true });
+  }
+  const dossier = buildDossier(outputDir, {
     text_max_bytes: 163840,
     screenshots: { max: 4, max_bytes: 262144 },
     app_max_files: 993,
     app_max_bytes: 50331648,
     app_path_max_bytes: 1000,
-  }),
-);
+  });
+  writeFileSync(join(outputDir, 'dossier.json'), dossier);
+}
+
+handIn();

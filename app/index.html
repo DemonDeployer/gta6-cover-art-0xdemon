@@ -3,78 +3,93 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Neon Vice Cover Studio</title>
+<title>Neon Vice Cover Studio — GTA-style cover maker</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
-  <h1>NEON VICE <span>Cover Studio</span></h1>
-  <p class="tagline">Turn your photo into a GTA-style sunset cover. Pick a layout, pick a grade, export a PNG.</p>
+  <div class="brand"><span class="brand-mark">NV</span><span class="brand-name">NEON VICE <em>Cover Studio</em></span></div>
+  <p class="tagline">Your photo. Your caption. A Vice City sunset poster — exported as a PNG, offline.</p>
 </header>
 
-<main id="app" class="layout">
-  <section class="preview-col">
-    <div class="canvas-wrap">
-      <canvas id="preview" width="1080" height="1080"></canvas>
+<main class="studio">
+  <section class="preview-wrap">
+    <div class="preview-frame">
+      <canvas id="coverCanvas" width="1080" height="1080" aria-label="Cover preview"></canvas>
+      <div class="preview-hint" id="previewHint">Drag a photo to move it &middot; scroll or use the zoom slider to crop it</div>
     </div>
-    <div id="selftest" class="selftest" aria-live="polite"></div>
-    <div class="export-row">
-      <button id="exportBtn" type="button">Export PNG</button>
-      <span id="exportInfo" class="muted"></span>
-    </div>
+    <div class="panel-strip" id="panelStrip" aria-label="Panels"></div>
   </section>
 
-  <section class="controls-col" id="editor">
-    <h2>Your photo</h2>
-    <div class="btn-row">
-      <button type="button" data-sample="samples/pier.jpg">Sample: Sunset Pier</button>
-      <button type="button" data-sample="samples/boulevard.jpg">Sample: Boulevard</button>
-    </div>
-    <label class="field">Upload your own photo
-      <input id="upload" type="file" accept="image/*">
-    </label>
+  <aside class="controls">
+    <section class="card">
+      <h2>1 &middot; Photos</h2>
+      <label class="upload-btn" for="photoInput">+ Add your photos</label>
+      <input id="photoInput" type="file" accept="image/*" multiple hidden>
+      <div class="thumb-row" id="photoThumbs"></div>
+      <div class="sample-row">
+        <span>Try a sample:</span>
+        <button type="button" data-sample="samples/boulevard.jpg">Boulevard</button>
+        <button type="button" data-sample="samples/pier.jpg">Pier</button>
+      </div>
+      <p class="note">Photos stay on your machine — nothing is uploaded.</p>
+    </section>
 
-    <h2>Layout</h2>
-    <div class="btn-row" id="layoutRow">
-      <button type="button" data-layout="square">Square 1080&times;1080</button>
-      <button type="button" data-layout="portrait">Portrait 1080&times;1350</button>
-      <button type="button" data-layout="wide">Wide 1920&times;1080</button>
-    </div>
+    <section class="card">
+      <h2>2 &middot; Layout</h2>
+      <div class="choice-row" id="layoutRow">
+        <button type="button" data-layout="trio" class="active">Vice Trio<br><small>3 panels</small></button>
+        <button type="button" data-layout="grid">Neon Grid<br><small>4 panels</small></button>
+        <button type="button" data-layout="hero">Hero + Strip<br><small>1 big + 2</small></button>
+      </div>
+    </section>
 
-    <h2>Grade</h2>
-    <div class="btn-row" id="gradeRow">
-      <button type="button" data-grade="sunset">Sunset Split</button>
-      <button type="button" data-grade="neon">Neon Diagonal</button>
-      <button type="button" data-grade="gold">Gold Strip</button>
-      <button type="button" data-grade="dusk">Purple Dusk</button>
-    </div>
+    <section class="card">
+      <h2>3 &middot; Sunset grade</h2>
+      <div class="choice-row grades" id="gradeRow">
+        <button type="button" data-grade="sunset" class="active" style="--g1:#ff7a18;--g2:#ff2d78">Sunset</button>
+        <button type="button" data-grade="neon" style="--g1:#ff2ec4;--g2:#00e5ff">Neon Pink</button>
+        <button type="button" data-grade="purple" style="--g1:#7b2fff;--g2:#ff5e8a">Vice Purple</button>
+        <button type="button" data-grade="gold" style="--g1:#ffb703;--g2:#fb8500">Golden Hour</button>
+      </div>
+    </section>
 
-    <h2>Caption</h2>
-    <label class="field">Title
-      <input id="titleInput" type="text" value="NEON VICE" maxlength="24">
-    </label>
-    <label class="field">Subtitle
-      <input id="subtitleInput" type="text" value="A SUNSET STORY IN THE CITY" maxlength="48">
-    </label>
+    <section class="card">
+      <h2>4 &middot; Caption</h2>
+      <label class="field-label" for="captionInput">Title</label>
+      <input id="captionInput" type="text" value="VICE NIGHTS" maxlength="28">
+      <label class="field-label" for="subtitleInput">Subtitle</label>
+      <input id="subtitleInput" type="text" value="a neon story in three panels" maxlength="48">
+      <label class="field-label" for="badgeInput">Corner badge</label>
+      <input id="badgeInput" type="text" value="EST. 2026" maxlength="18">
+    </section>
 
-    <h2>Crop</h2>
-    <p class="muted">Pick a panel, then drag the preview or use the sliders. Each panel crops the same photo independently.</p>
-    <div class="btn-row" id="panelRow"></div>
-    <label class="field">Zoom <span id="zoomVal">1.20</span>
-      <input id="zoom" type="range" min="1" max="3" step="0.05" value="1.2">
-    </label>
-    <label class="field">Crop X <span id="cxVal">0.50</span>
-      <input id="cx" type="range" min="0" max="1" step="0.01" value="0.5">
-    </label>
-    <label class="field">Crop Y <span id="cyVal">0.45</span>
-      <input id="cy" type="range" min="0" max="1" step="0.01" value="0.45">
-    </label>
+    <section class="card">
+      <h2>Selected panel</h2>
+      <p class="note" id="panelLabel">Panel 1 — click a panel below the preview to pick it.</p>
+      <label class="field-label" for="zoomInput">Zoom <span id="zoomValue">100%</span></label>
+      <input id="zoomInput" type="range" min="100" max="260" value="100">
+      <div class="btn-row">
+        <button type="button" id="fillAllBtn">Fill all panels with this photo</button>
+        <button type="button" id="nextPhotoBtn">Next photo in panel</button>
+        <button type="button" id="resetPanelBtn">Reset position</button>
+      </div>
+    </section>
 
-    <p class="note">All fonts, photos and code load from this app's own files. Nothing is uploaded anywhere; the export happens in your browser.</p>
-  </section>
+    <section class="card export-card">
+      <h2>5 &middot; Export PNG</h2>
+      <div class="choice-row" id="sizeRow">
+        <button type="button" data-size="1080x1080" class="active">1080 &times; 1080<br><small>square</small></button>
+        <button type="button" data-size="1080x1350">1080 &times; 1350<br><small>portrait</small></button>
+        <button type="button" data-size="1920x1080">1920 &times; 1080<br><small>wide</small></button>
+      </div>
+      <button type="button" id="exportBtn" class="export-btn">Download cover PNG</button>
+      <p class="note" id="exportNote">Ready.</p>
+    </section>
+  </aside>
 </main>
 
-<noscript><p>Neon Vice Cover Studio needs JavaScript to draw your cover.</p></noscript>
+<footer class="foot">Neon Vice Cover Studio — an original fan-style poster maker. No Rockstar Games logo, artwork or font. Fonts: Anton &amp; Bebas Neue (SIL Open Font License).</footer>
 <script src="app.js"></script>
 </body>
 </html>
