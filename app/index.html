@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neon Vice — Cover Studio</title>
+<meta name="description" content="Turn your photo and a caption into multi-panel poster cover art with a Vice City sunset and neon grade. Runs fully offline; your photos never leave your machine.">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-sun" aria-hidden="true"></span>
+    <span class="brand-name">NEON VICE</span>
+    <span class="brand-sub">Cover Studio</span>
+  </div>
+  <p class="tagline">Your photo. Your caption. Poster cover art.</p>
+</header>
+
+<main class="app">
+  <section class="controls" aria-label="Cover controls">
+    <h1>Make your cover</h1>
+    <p class="lede">Three steps: drop in photos, pick a layout and a sunset grade, write your caption — then export a PNG to post.</p>
+
+    <fieldset class="step">
+      <legend>1 · Photos</legend>
+      <label class="file-label">One photo for every panel
+        <input id="photo-all" type="file" accept="image/*">
+      </label>
+      <div class="panel-slots">
+        <div class="slot" data-panel="0">
+          <span class="slot-name">Hero panel</span>
+          <label>Photo <input class="photo-input" data-panel="0" type="file" accept="image/*"></label>
+          <button class="sample-btn" type="button" data-panel="0" data-sample="pier">Use sample</button>
+        </div>
+        <div class="slot" data-panel="1">
+          <span class="slot-name">Panel two</span>
+          <label>Photo <input class="photo-input" data-panel="1" type="file" accept="image/*"></label>
+          <button class="sample-btn" type="button" data-panel="1" data-sample="boulevard">Use sample</button>
+        </div>
+        <div class="slot" data-panel="2">
+          <span class="slot-name">Panel three</span>
+          <label>Photo <input class="photo-input" data-panel="2" type="file" accept="image/*"></label>
+          <button class="sample-btn" type="button" data-panel="2" data-sample="pier">Use sample</button>
+        </div>
+      </div>
+      <button id="sample-set" type="button" class="ghost">Fill all panels with samples</button>
+      <p class="hint">Photos stay on your machine — nothing is uploaded.</p>
+      <div class="tune">
+        <label>Active panel
+          <select id="active-panel">
+            <option value="0">Hero panel</option>
+            <option value="1">Panel two</option>
+            <option value="2">Panel three</option>
+          </select>
+        </label>
+        <label>Zoom <input id="zoom" type="range" min="100" max="260" value="100"><span id="zoom-val">100%</span></label>
+        <label>Move left / right <input id="pan-x" type="range" min="-100" max="100" value="0"></label>
+        <label>Move up / down <input id="pan-y" type="range" min="-100" max="100" value="0"></label>
+        <button id="reset-crop" type="button" class="ghost">Reset crop</button>
+      </div>
+    </fieldset>
+
+    <fieldset class="step">
+      <legend>2 · Layout &amp; grade</legend>
+      <div class="seg" role="group" aria-label="Layout">
+        <button type="button" class="layout-btn is-on" data-layout="split">Sunset Split</button>
+        <button type="button" class="layout-btn" data-layout="diagonal">Diagonal Vice</button>
+        <button type="button" class="layout-btn" data-layout="strip">Triple Strip</button>
+      </div>
+      <div class="seg" role="group" aria-label="Colour grade">
+        <button type="button" class="grade-btn is-on" data-grade="sunset">Sunset</button>
+        <button type="button" class="grade-btn" data-grade="neon">Neon Pink</button>
+        <button type="button" class="grade-btn" data-grade="teal">Teal Night</button>
+        <button type="button" class="grade-btn" data-grade="gold">Gold Hour</button>
+      </div>
+      <div class="checks">
+        <label><input id="opt-palms" type="checkbox" checked> Palm silhouettes</label>
+        <label><input id="opt-sun" type="checkbox" checked> Neon sun</label>
+        <label><input id="opt-halftone" type="checkbox" checked> Halftone dots</label>
+        <label><input id="opt-vignette" type="checkbox" checked> Vignette</label>
+        <label><input id="opt-frame" type="checkbox" checked> Neon frame</label>
+      </div>
+    </fieldset>
+
+    <fieldset class="step">
+      <legend>3 · Words</legend>
+      <label>Caption <input id="caption" type="text" maxlength="32" value="VICE NIGHTS"></label>
+      <label>Subtitle <input id="subtitle" type="text" maxlength="40" value="SUNSET BOULEVARD"></label>
+      <div class="seg" role="group" aria-label="Caption style">
+        <button type="button" class="style-btn is-on" data-style="sunset">Sunset fill</button>
+        <button type="button" class="style-btn" data-style="neon">Neon glow</button>
+        <button type="button" class="style-btn" data-style="solid">Solid white</button>
+      </div>
+      <label>Caption size <input id="cap-size" type="range" min="60" max="140" value="100"><span id="cap-size-val">100%</span></label>
+    </fieldset>
+
+    <fieldset class="step">
+      <legend>4 · Export PNG</legend>
+      <div class="export-row">
+        <button id="export-square" type="button" class="export-btn">1080 × 1080</button>
+        <button id="export-portrait" type="button" class="export-btn">1080 × 1350</button>
+        <button id="export-wide" type="button" class="export-btn">1920 × 1080</button>
+      </div>
+      <p class="hint">Square for the feed, portrait for stories, wide for banners.</p>
+      <p id="status" role="status" aria-live="polite"></p>
+      <p id="selftest" hidden></p>
+    </fieldset>
+  </section>
+
+  <section class="stage" aria-label="Cover preview">
+    <canvas id="cover" width="1080" height="1080" aria-label="Live cover preview"></canvas>
+    <p class="stage-note"><span id="size-label">1080 × 1080</span> · live preview — what you see is what the PNG gets.</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>Neon Vice Cover Studio — original art, lettering and code. No Rockstar Games logos, artwork or fonts. Fonts: Anton &amp; Bebas Neue (SIL Open Font License, under <code>app/fonts/</code>). Works offline; no network requests.</p>
+</footer>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
